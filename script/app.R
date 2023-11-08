@@ -13,7 +13,7 @@ library(shiny)
 ui <- fluidPage(
   h1("Crosshill Film Club: Movie Selector"),
   br(),
-  h3("Press the button below to randomly generate a list of 5 films."),
+  h3("Click the button below to randomly generate a list of 5 films."),
   br(),
   actionButton(inputId = "button", label = "Click here"),
   h3(textOutput("text"))
@@ -21,22 +21,24 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
-  # store vector to display
-  values <- reactiveValues(
-    vector <- sample_5_films()
-  )
-
-  # update vector when button is clicked
-  observeEvent(
-    input$button, {
-      values$vector
-    }
-  )
-
-  # display vector
-  output$text <- renderText({
-    values$vector
-  })
+  # NOT WORKING :(
+  
+  # # store vector to display
+  # values <- reactiveValues(
+  #   vector <- sample_5_films()
+  # )
+  # 
+  # # update vector when button is clicked
+  # observeEvent(
+  #   input$button, {
+  #     values$vector
+  #   }
+  # )
+  # 
+  # # display vector
+  # output$text <- renderText({
+  #   values$vector
+  # })
 
 }
 
