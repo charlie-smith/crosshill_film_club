@@ -19,8 +19,3 @@ sample_5_films <- function(){
   
 }
 
-# vector_sample <- sample_5_films()
-
-
-
-
