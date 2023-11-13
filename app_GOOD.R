@@ -12,20 +12,20 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   
+  
   sample_5_films <- function(){
     
     url <- "https://docs.google.com/spreadsheets/d/1Pz1FN4p9nAyt40HBfpQgoS4Rr-jTYnxG3w-Wpj-g4DY/edit?usp=drivesdk"
     df <- read_sheet(url, sheet = "Films")
-    sample_vector <- sample(df$Title, 5)
+    sample_vector <- sample(df$Title, 3)
     
     return(sample_vector)
     
   } 
   
-  film_list <- reactiveVal(sample_5_films()) # make a reactive value that calls that film sampling function
+  film_list <- reactiveVal() # empty reactive value
   
   observeEvent(input$new_films, {
-    #req(input$new_films)
     film_list(sample_5_films())
   }) # then watch the button, and update the reactive value. This is a really weird bit, because calling a reactive with an argument updates that reactive value.
   
