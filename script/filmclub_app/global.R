@@ -4,10 +4,16 @@
 library(here)
 library(tidyverse)
 library(googlesheets4)
+library(googledrive)
 library(shiny)
 library(rsconnect)
 library(shinymanager)
 
 
-gs4_auth(cache = ".secrets"#, email = TRUE, use_oob = TRUE
-         )
+# drive_auth(path = here("script", "admin", "client_secret.json"))
+# 
+# gs4_auth(path = here("script", "admin", "client_secret.json"),
+#           scopes = "drive.file")
+
+
+googledrive::drive_auth_configure()
