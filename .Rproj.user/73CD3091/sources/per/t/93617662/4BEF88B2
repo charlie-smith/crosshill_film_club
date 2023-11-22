@@ -1,0 +1,26 @@
+{
+    "id": "4BEF88B2",
+    "path": "~/crosshill_film_club/script/functions/pull_gsheets_films.R",
+    "project_path": "script/functions/pull_gsheets_films.R",
+    "type": "r_source",
+    "hash": "2451513740",
+    "contents": "",
+    "dirty": false,
+    "created": 1700169230415.0,
+    "source_on_save": false,
+    "relative_order": 7,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "11,18",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1700662164,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1700662164248,
+    "read_only": false,
+    "read_only_alternatives": []
+}

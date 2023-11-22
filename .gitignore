@@ -2,3 +2,4 @@
 admin/
 .secrets
 credentials.RDS
+.Rproj.user

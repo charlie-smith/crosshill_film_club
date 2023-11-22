@@ -1,0 +1,30 @@
+library(shiny)
+
+ui <- fluidPage(
+  fluidRow(column(6,div(checkboxGroupInput("test1", "Testing buttons", 
+                                           choices=c("A","B","C"),
+                                           selected=c("A","B","C"))))),
+  
+  hr(),
+  actionButton("gobutton","Start"),
+  dataTableOutput("summary_table")
+  
+)
+
+server <- function(input,output){
+  
+  data <- eventReactive(input$gobutton,{
+    if(is.null(input$test1)){
+      return()
+    }
+    
+    df <- data.frame(col1=input$test1,col2=seq(1,length(input$test1),1))
+    
+  })
+  
+  output$summary_table <- renderDataTable({
+    data()
+  })
+}
+
+shinyApp(ui=ui, server=server)

@@ -1,0 +1,396 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# ui.R
+# User interface script for the NHS emissions dashboard
+# March 2023
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+source(here("data_prep/emissions_data_prep.R"))
+source(here("data_prep/hb_bar_chart.R"))
+
+ui <- fluidPage(
+
+  ### Code for theme ----
+  # ~~~~~~~~~~~~~~~~~~~~~~~~
+  tagList( # needed for shinyjs
+    useShinyjs(), # Include shinyjs
+
+    navbarPage(
+      id = "intabset", # id used for jumping between tabs
+      title = div(
+        tags$a(img(src = "phs-logo.png", width = 120, alt = "Public Health Scotland logo"),
+          href = "https://www.publichealthscotland.scot/",
+          target = "_blank"
+        ),
+        style = "position: relative; top: -10px;"
+      ),
+      windowTitle = "NHS Emissions", # title for browser tab
+      header = tags$head(
+        includeCSS("www/styles.css"), # CSS styles
+        HTML("<html lang='en'>"),
+        tags$link(rel = "shortcut icon", href = "favicon_phs.ico"), # Icon for browser tab
+        # To obtain user screen size
+        tags$script('
+                                var dimension = [0, 0];
+                                $(document).on("shiny:connected", function(e) {
+                                    dimension[0] = window.innerWidth;
+                                    dimension[1] = window.innerHeight;
+                                    Shiny.onInputChange("dimension", dimension);
+                                });
+                                $(window).resize(function(e) {
+                                    dimension[0] = window.innerWidth;
+                                    dimension[1] = window.innerHeight;
+                                    Shiny.onInputChange("dimension", dimension);
+                                }); ')
+      ),
+
+
+      ############################################### .
+      ### Home ----
+      ############################################### .
+      tabPanel(
+        title = "Home", icon = icon("info-circle"), value = "home",
+        sidebarLayout(
+          sidebarPanel(
+            width = 3,
+            radioGroupButtons("home_select",
+              choices = home_list, status = "primary",
+              direction = "vertical", justified = T
+            )
+          ),
+          mainPanel(
+            width = 9,
+
+            # About
+            conditionalPanel(
+              condition = 'input.home_select == "about"',
+              tagList(
+                h3(tags$b("NHS Scotland emissions")),
+                p(
+                  "This dashboard presents data on NHS Scotland’s carbon emissions. This information
+                         has been brought together in order to support the ",
+                  tags$a(
+                    href = "https://www.gov.scot/publications/nhs-scotland-climate-emergency-sustainability-strategy-2022-2026/",
+                    "NHS Scotland Climate Emergency & Sustainability Strategy (external website).", target = "_blank"
+                  )
+                ),
+                p(
+                  "The strategy sets out the approach and actions which will be taken by
+                       NHS Scotland, with support from the Scottish Government and in partnership
+                       with others, to respond to the climate emergency and to contribute towards
+                       the achievement of the ",
+                  tags$a(
+                    href = "https://sdgs.un.org/goals",
+                    "United Nations' Sustainable Development Goals (external website).", target = "_blank"
+                  )
+                ),
+                p("This dashboard is a prototype and will be subject to further changes
+                         as development continues."), br(),
+                h5(tags$b("How is the data collected?")),
+                p("All public bodies listed in Schedule 1 of the 'Climate Change (Duties
+                       of Public Bodies; Reporting Requirements) (Scotland) Order 2015' are required
+                       to report annually on compliance with climate change duties."),
+                p(
+                  "Each Health Board is duty bound to submit their emissions report to the ",
+                  tags$a(
+                    href = "https://sustainablescotlandnetwork.org/reports",
+                    "Public Bodies Climate Change Duties Compliance Reporting (external website)", target = "_blank"
+                  ), "which is
+                         collected annually by the ",
+                  tags$a(
+                    href = "https://sustainablescotlandnetwork.org/",
+                    "Sustainability Network Scotland (SSN) (external website).", target = "_blank"
+                  )
+                ),
+                p("The dashboard takes the information contained in these individual reports
+                       and presents it in a format which allows comparisons to be made and progress
+                       over time to be monitored."), br(),
+                h5(tags$b("Why is this data important to Public Health?")),
+                p("The NHS Scotland Climate Emergency & Sustainability Strategy explains
+                       that the threats to human health from the climate emergency, both in
+                       Scotland and globally, are so serious that climate change has been
+                       described by the Lancet Commission on Managing the Health Effects of
+                       Climate Change as 'the biggest global health threat of the 21st century'.[1]"),
+                p("At the same time, many of the actions needed in response to the climate
+                       emergency and the environmental crisis have positive health impacts if
+                       delivered with that intent. Cutting emissions, enabling active travel,
+                       restoring biodiversity and improving air quality can prevent diseases
+                       such as asthma, pneumonia, heart attacks and stroke. The direct and
+                       indirect health benefits are so great that tackling climate change has
+                       also been described by the Lancet Commission as 'the greatest global
+                       health opportunity of the 21st century'.[2]"),
+                tags$ol(
+                  tags$li(tags$a(
+                    href = "https://www.researchgate.net/publication/24432180_Managing_the_health_effects_of_climate_change_Lancet_and_University_College_London_Institute_for_Global_Health_Commission",
+                    "Managing the Health Effects of Climate Change, The Lancet, Volume 373, Issue 9676, P1693-1733, 2009 (external website)", target = "_blank"
+                  )),
+                  tags$li(tags$a(
+                    href = "https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(15)60854-6/fulltext",
+                    "Health and climate change: policy responses to protect public health, The Lancet, Volume 386, Issue 10006, P1861-1914, 2015 (external website)", target = "_blank"
+                  ))
+                ),
+                br(),
+                h5(tags$b("Contact us")),
+                # p(
+                #   "Please contact the ", tags$a(href = "mailto:xxxxxx@phs.scot", "xxxxx team"),
+                #   "if you have any questions about this dashboard."
+                # ), be()
+                p("*** This section is under development and not complete ***")
+              ) # tagList
+            ), # conditionalPanel
+
+            # Using the dashboard
+            conditionalPanel(
+              condition = 'input.home_select == "use"',
+              tagList(
+                h3(tags$b("Using the dashboard")), br(),
+                h5(tags$b("Interacting with the dashboard")),
+                p("On each tab in the dashboard there are drop-down menus which allow the user to update
+                               the charts for specific NHS Board, financial year, or Scope type. The Health
+                               Board drop-downs allow multiple locations to be selected to add them to the charts
+                                 to allow comparisons to be made."), br(),
+                h5(tags$b("Downloads")),
+                tags$ul(
+                  # tags$li("There is the option to download data as a csv file by clicking the
+                  #                  'Download data' button which can be found above the table on each tab."),
+                  tags$li("To download an image of a chart, click the camera icon in the top-right
+                                   corner of any chart in the dashboard and a png image file will automatically download.")
+                ),
+                br(),
+                h5(tags$b("Open data")),
+                # tags$ul(
+                #   tags$li(
+                #     "Open data from this publication is available from the ",
+                #     tags$a(
+                #       href = "https://www.opendata.nhs.scot/dataset/xxxxxxxxxxxxxxxx",
+                #       "Scottish Health and Social Care Open Data platform (external website).",
+                #       target = "_blank"
+                #     )
+                #   ),
+                #   tags$li(
+                #     "The code used to produce this dashboard can be accessed in the ",
+                #     tags$a(
+                #       href = "https://github.com/Public-Health-Scotland/nhs_sco_emissions",
+                #       "NHS Scotland emissions GitHub repository (external website).",
+                #       target = "_blank"
+                #     )
+                #   )
+                # ),
+                p("*** This section is under development and not complete ***"),
+                br()
+              ) # tagList
+            ), # condtionalPanel
+
+            # Definitions
+            conditionalPanel(
+              condition = 'input.home_select == "definitions"',
+              tagList(
+                h3(tags$b("Definitions")), br(),
+                h5(tags$b("Greenhouse gases")),
+                p("Greenhouse gases are gases that trap heat in the
+                                        atmosphere, causing global warming and climate change.
+                                        The main greenhouse gases released by human activity
+                                        are carbon dioxide, methane, and nitrous oxide."), br(),
+                h5(tags$b("Carbon footprint")),
+                p("A carbon footprint is a measure of the greenhouse gas
+                                        emissions released into the atmosphere by a particular
+                                        person, organisation, product, or activity. Measuring
+                                        an organisation's carbon footprint entails looking at
+                                        both the direct emissions resulting from the burning
+                                        of fossil fuels for energy production, heating, and land
+                                        and air travel, and indirect emissions resulting from
+                                        the production and disposal of all food, manufactured
+                                        goods, and services they consume."), br(),
+                h5(tags$b("Scope")),
+                p("The three scopes are a way of categorising the different kinds of
+                                     emissions a company creates in its own operations and in its wider
+                                     'value chain' (its suppliers and customers). Emissions that are controlled
+                                     or owned directly by a company are included under scope 1 and 2, whereas
+                                     scope 3 emissions are a result of actions of the company but occur from
+                                       sources the company does not control or own."),
+                tags$ul(
+                  tags$li("Scope 1 is defined as emissions from sources owned or controlled
+                                     by an organisation directly – such as from burning fuel in a fleet
+                                               of non-electric vehicles."),
+                  tags$li("Scope 2 is defined as emissions that are indirectly caused by an
+                                     organisation when it purchases energy for example electricity for
+                                     heating and cooling, or the purchasing of electricity for charging electric vehicles."),
+                  tags$li("Scope 3 is defined as emissions not produced by an organisation,
+                                       or the results of assets owned or controlled by the organisation,
+                                       but those it is indirectly responsible for. For example, when an
+                                       organisation buys and disposes of products from suppliers. Any
+                                      emissions not included within Scope 1 or 2 are accounted for in Scope 3.")
+                ),
+                br()
+              ) # tagList
+            ), # conditionalPanel
+
+            # Accessibility
+            conditionalPanel(
+              condition = 'input.home_select == "accessibility"',
+              tagList(
+                h3(tags$b("Accessibility")), br(),
+                p(
+                  "This website is run by ", tags$a(
+                    href = "https://www.publichealthscotland.scot/",
+                    "Public Health Scotland", target = "_blank"
+                  ),
+                  ", Scotland's national organisation for public health. As a new organisation formed
+                                on 1 April 2020, Public Health Scotland is currently reviewing its web estate. Public
+                                Health Scotland is committed to making its website accessible, in accordance with
+                                the Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility
+                                Regulations 2018."
+                ),
+                p(
+                  tags$a(href = "https://mcmw.abilitynet.org.uk/", "AbilityNet (external website)", target = "_blank"),
+                  " has advice on making your device easier to use if you have a disability."
+                ), br(),
+                h5(tags$b("Compliance status")),
+                p("This site has not yet been evaluated against Web Content Accessibility Guidelines
+                                 version 2.1 level AA standard."), br(),
+                h5(tags$b("Reporting any accessibility problems with this website")),
+                p("If you wish to contact us about any accessibility issues you encounter on this
+                                 site, please email ", tags$a(href = "mailto:xxxxxxx@phs.scot", "xxxxxxxx@phs.scot", ".")), br(),
+                h5(tags$b("Enforcement procedure")),
+                p(
+                  "The Equality and Human Rights Commission (EHRC) is responsible for enforcing the
+                               Public Sector Bodies (Websites and Mobile Applications) (No. 2) Accessibility Regulations
+                                 2018 (the accessibility regulations). If you're not happy with how we respond to your complaint,",
+                  tags$a(
+                    href = "https://www.equalityadvisoryservice.com/", "contact the Equality Advisory and Support Service (EASS) (external website).",
+                    target = "_blank"
+                  )
+                ), br(),
+                h5(tags$b("Preparation of this accessibility statement")),
+                p("This statement was prepared on DD MMM 2023. It was last reviewed on DD MMM 2023."), br()
+              ) # tagList
+            ) # conditonalPanel
+          ) # mainPanel
+        ) # sidebarLayout
+      ), # tabPanel
+
+
+
+      ############################################### .
+      ### Annual emissions ----
+      ############################################### .
+
+      tabPanel(
+        title = "Annual emissions", icon = icon("hospital"),
+        h3("Health board emissions by scope type"),
+        h6(
+          tags$div(
+            p("This chart compares the annual carbon emissions of health boards and
+            compares these with the national average, with the option to select the financial
+            year and scope types.")
+          )
+        ),
+        br(),
+        column(
+          12,
+          column(3, selectInput("Year",
+            label = "Select Financial Year", choices = rev(sort(unique(df_emissions_hb$Year))),
+            selected = "2021/22"
+          )),
+          column(3, selectInput("scope_hb",
+            label = "Select Scope", choices = unique(df_emissions_hb$scope_type),
+            selected = "Total"
+          )),
+          column(2, actionButton("scope_source_modal1", "What is a scope?"))
+        ),
+        br(),
+        column(
+          width = 12,
+          radioButtons(
+            "hbBarChartType", "Choose plot type:",
+            list("Workforce", "Population", "Raw")
+          ),
+          plotlyOutput("hb_barchart")
+        )
+      ), # tabPanel
+
+      ############################################### .
+      ### Trend ----
+      ############################################### .
+
+      tabPanel(
+        title = "Trend", icon = icon("arrow-trend-down"),
+        h3("Health board emissions by financial year and scope type"),
+        h6(
+          tags$div(
+            p("This chart shows the NHS Scotland carbon emissions over time, with
+            the option to select different health boards and scope types.")
+          )
+        ),
+        br(),
+        column(
+          12,
+          column(5, selectInput("healthboard",
+            label = "Select Health Board",
+            choices = unique(df_emissions$HB), selected = "NHS Ayrshire and Arran",
+            multiple = TRUE
+          )),
+          column(3, selectInput("scope_button",
+            label = "Select Scope", choices = unique(df_emissions$Scope),
+            selected = "Total"
+          )),
+          column(2, actionButton("scope_source_modal2", "What is a scope?"))
+        ),
+        column(
+          width = 12,
+          radioButtons(
+            "hbLineChartType", "Choose plot type:",
+            list("Workforce", "Population", "Raw")
+          ),
+          plotlyOutput("emission_line") # UPDATE output name
+        ),
+        column(
+          width = 12,
+          plotlyOutput("emission_line"),
+          br(),
+          plotlyOutput("emission_line_pops"),
+          br(),
+          plotlyOutput("emission_line_work"),
+          br(),
+          
+        )
+      ), # tabPanel
+
+
+      ############################################### .
+      ### Percentage change ----
+      ############################################### .
+
+      tabPanel(
+        title = "Percentage change", icon = icon("arrows-up-down"),
+        h3("Percentage change in emissions from baseline by health board"),
+        h6(
+          tags$div(
+            p("This chart shows the percentage change in carbon emissions in NHS Scotland
+            compared with a baseline year, with the option to select and compare
+            different health boards and scope types.")
+          )
+        ),
+        br(),
+        column(
+          12,
+          column(5, selectInput("perc_hb",
+            label = "Select Health Board",
+            choices = unique(df_emissions$HB), selected = "NHS Ayrshire and Arran",
+            multiple = TRUE
+          )),
+          column(3, selectInput("scope_button_perc",
+            label = "Select Scope", choices = unique(df_emissions$Scope),
+            selected = "Total"
+          )),
+          column(2, actionButton("scope_source_modal3", "What is a scope?"))
+        ),
+        br(),
+        column(
+          width = 12,
+          plotlyOutput("perc_change"),
+          br()
+        )
+      ) # tabPanel
+    ) # navbarPage
+  ) # tagList
+) # fluidPage

@@ -1,0 +1,27 @@
+{
+    "id": "7C7A51A9",
+    "path": "~/crosshill_film_club/script/sampler.R",
+    "project_path": "script/sampler.R",
+    "type": "r_source",
+    "hash": "2952022856",
+    "contents": "",
+    "dirty": false,
+    "created": 1699348780612.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled1",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "26,0",
+        "scrollLine": "0"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1699384889,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1699384889571,
+    "read_only": false,
+    "read_only_alternatives": []
+}

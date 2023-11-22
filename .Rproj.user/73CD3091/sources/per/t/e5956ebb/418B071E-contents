@@ -1,0 +1,28 @@
+
+#################################################.
+##' Shiny app so anyone can generate a sample ###
+#################################################.
+
+library(tidyverse)
+library(googlesheets4)
+library(shiny)
+
+
+#source("./script/sampler.R")
+
+ui <- fluidPage(
+  h1("Crosshill Film Club Film Picker"),
+  br(),
+  h3("Press the button below to generate a random list of 5 films."),
+  br(),
+  actionButton(inputId = "button", label = "Click here"),
+  textOutput("text")
+  )
+
+server <- function(input, output, session) {
+  
+  verbatimTextOutput(sample)
+  
+  }
+
+shinyApp(ui, server)
