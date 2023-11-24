@@ -3,6 +3,7 @@
 ##' Shiny app so anyone can generate a sample ###
 #################################################.
 
-here::i_am("app.R")
+here::i_am("crosshill_film_club.Rproj")
+
 
 shinyApp(ui, server)

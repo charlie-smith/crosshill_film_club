@@ -1,0 +1,24 @@
+{
+    "id": "B733EE4C",
+    "path": "~/crosshill_film_club/script/global.R",
+    "project_path": "script/global.R",
+    "type": "r_source",
+    "hash": "1733324971",
+    "contents": "",
+    "dirty": false,
+    "created": 1699449569505.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1699433207,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1699433207,
+    "read_only": false,
+    "read_only_alternatives": []
+}

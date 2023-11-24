@@ -1,0 +1,347 @@
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# server.R
+# Script where plots and modals are created for the NHS emissions dashboard
+# March 2023
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+server <- shinyServer(function(input, output, session) {
+  # colours for chart
+  pal <- c(
+    "Above average" = phsstyles::phs_colors("phs-magenta"),
+    "Below average" = phsstyles::phs_colors("phs-purple"),
+    "Same as average" = "white"
+  )
+
+  create_emissions_bar <- function(data) {
+    units <- pull(data, Units)[1]
+
+    emis_bar_plot <- data %>%
+      ggplot(aes(
+        x = value,
+        y = reorder(HB, value),
+        fill = scot_avg_label,
+        text = str_glue(
+          "Health Board: {HB}<br>",
+          "Financial Year: {Year}<br>",
+          "Scope: {scope_type}<br>",
+          "Average Emissions ({units}): {scot_value_label}<br>",
+          "HB Emissions ({units}): {value_label}<br>",
+          "Status: {scot_avg_label}"
+        )
+      )) +
+      geom_col() +
+      geom_vline(
+        aes(
+          xintercept = scot_avg,
+          colour = "Scotland Average"
+        ),
+        linetype = "dotted"
+      ) +
+      scale_fill_manual(
+        name = "Health Board\nComparison",
+        values = pal
+      ) +
+      scale_x_continuous(
+        labels = function(lab) format(lab, big.mark = ",", scientific = FALSE)
+      ) +
+      scale_colour_manual(
+        name = "",
+        values = c(`Scotland Average` = phsstyles::phs_colors("phs-purple-30"))
+      ) +
+      theme_minimal() +
+      labs(y = NULL, x = str_glue("Emissions ({units})"))
+
+    return(ggplotly(emis_bar_plot, tooltip = c("text")))
+  }
+
+  create_emmissions_line <- function(data) {
+    units <- pull(data, Units)[1]
+    magitude <- 10^(floor(log10(signif(max(data$Value, na.rm = TRUE), 1))))
+    upper_limit <- ceiling(max(data$Value, na.rm = TRUE) / magitude) * magitude
+
+    emission_plot <- ggplot(data, aes(
+      x = calYear,
+      y = Value,
+      colour = HB,
+      linetype = HB,
+      shape = HB,
+      group = HB,
+      text = str_glue(
+        "Health Board: {HB}<br>",
+        "Financial Year: {Year}<br>",
+        "Scope: {Scope}<br>",
+        "Emissions ({units}): {Value}<br>"
+      )
+    )) +
+      geom_line() +
+      geom_point() +
+      scale_x_date(
+        labels = add_fisc_year_lab,
+        minor_breaks = NULL,
+        breaks = scales::breaks_width("year")
+      ) +
+      scale_y_continuous(
+        minor_breaks = NULL,
+        limits = c(0, upper_limit),
+        labels = scales::label_comma()
+      ) +
+      scale_colour_manual(
+        values = colour_linetype_combn(
+          n = length(input$healthboard),
+          aesthetic = "colour"
+        )
+      ) +
+      scale_linetype_manual(
+        values = colour_linetype_combn(
+          n = length(input$healthboard),
+          aesthetic = "linetype"
+        )
+      ) +
+      scale_shape_manual(
+        values = colour_linetype_combn(
+          n = length(input$healthboard),
+          aesthetic = "shape"
+        )
+      ) +
+      labs(
+        x = "Financial Year",
+        y = str_glue("Emissions ({units})"),
+        colour = "Health Board",
+        linetype = "Health Board",
+        shape = "Health Board"
+      ) +
+      theme_bw() +
+      theme(
+        panel.border = element_blank(),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+      )
+
+    return(ggplotly(emission_plot, tooltip = c("text")))
+  }
+
+
+  # HB Bar charts:
+
+  # Raw emissions
+  output$hb_barchart <- renderPlotly({
+    if (input$hbBarChartType == "Workforce") {
+      data <- df_emissions_hb_work %>%
+        filter(
+          scope_type == input$scope_hb,
+          Year == input$Year
+        )
+
+      create_emissions_bar(data)
+    } else if (input$hbBarChartType == "Populations") {
+      data <- df_emissions_hb_pop %>%
+        filter(
+          scope_type == input$scope_hb,
+          Year == input$Year
+        )
+
+      create_emissions_bar(data)
+    } else if (input$hbBarChartType == "Raw") {
+      data <- df_emissions_hb %>%
+        filter(
+          scope_type == input$scope_hb,
+          Year == input$Year
+        )
+      create_emissions_bar(data)
+    } else {
+      data <- df_emissions_hb_work %>%
+        filter(
+          scope_type == input$scope_hb,
+          Year == input$Year
+        )
+
+      create_emissions_bar(data)
+    }
+  })
+
+
+  # Trend charts:
+
+  # Raw emissions
+  output$emission_line <- renderPlotly({
+    data <- df_emissions %>%
+      filter(
+        HB %in% c(input$healthboard),
+        Scope == input$scope_button
+      )
+
+    create_emmissions_line(data)
+  })
+
+  # Population adjusted
+  output$emission_line_pops <- renderPlotly({
+    data <- df_emissions_hb_pop %>%
+      rename(
+        Value = value,
+        Scope = scope_type
+      ) %>%
+      filter(
+        HB %in% c(input$healthboard),
+        Scope == input$scope_button
+      )
+
+    create_emmissions_line(data)
+  })
+
+  # Population adjusted
+  output$emission_line_work <- renderPlotly({
+    data <- df_emissions_hb_work %>%
+      rename(
+        Value = value,
+        Scope = scope_type
+      ) %>%
+      filter(
+        HB %in% c(input$healthboard),
+        Scope == input$scope_button
+      )
+
+    create_emmissions_line(data)
+  })
+
+
+  # Percentage change:
+
+  output$perc_change <- renderPlotly({
+    df_emissions_perc <- df_emissions %>%
+      filter(
+        HB %in% c(input$perc_hb),
+        Scope == input$scope_button_perc
+      )
+
+    emis_perc_change_plot <- df_emissions_perc %>%
+      ggplot(aes(
+        x = calYear,
+        y = perc_change,
+        colour = HB,
+        linetype = HB,
+        shape = HB,
+        text = paste0(
+          "Health Board: ", HB, "<br>",
+          "Financial Year: ", Year, "<br>",
+          "Baseline Emissions (tCO2e): ", baseline_value_label, "<br>",
+          "Annual Emissions (tCO2e):", value_label, "<br>",
+          "Percentage change from baseline: ", perc_change_label
+        )
+      )) +
+      geom_line(aes(group = HB)) +
+      geom_point() +
+      ylab("Change from baseline (%)") +
+      xlab("Financial Year") +
+      scale_x_date(
+        labels = add_fisc_year_lab,
+        minor_breaks = NULL,
+        breaks = scales::breaks_width("year")
+      ) +
+      scale_colour_manual(
+        values = colour_linetype_combn(
+          n = length(input$perc_hb),
+          aesthetic = "colour"
+        )
+      ) +
+      scale_linetype_manual(
+        values = colour_linetype_combn(
+          n = length(input$perc_hb),
+          aesthetic = "linetype"
+        )
+      ) +
+      scale_shape_manual(
+        values = colour_linetype_combn(
+          n = length(input$perc_hb),
+          aesthetic = "shape"
+        )
+      ) +
+      labs(
+        colour = "Health Board",
+        linetype = "Health Board",
+        shape = "Health Board"
+      ) +
+      theme_bw() +
+      theme(
+        panel.border = element_blank(),
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1)
+      )
+
+    emis_perc_change_plot <- ggplotly(
+      emis_perc_change_plot,
+      tooltip = c("text")
+    )
+  })
+
+
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  ## Modals ----
+  # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  # Pop-up modal explaining source of data
+  observeEvent(
+    input$scope_source_modal1,
+    showModal(modalDialog(
+      title = "What are emission scopes?",
+      h5(strong("Definitions of scope 1, 2 and 3 emissions")),
+      p("Emissions that are controlled or owned directly by a company are included under
+                   scope 1 and 2, whereas scope 3 emissions are a result of actions of the company
+                   but occur from sources the company does not control or own."),
+      h5(strong("Scope 1 Emissions")),
+      p("Scope 1 is defined as emissions from sources owned or controlled by an organisation
+                     directly – such as from burning fuel in a fleet of non-electric vehicles."),
+      h5(strong("Scope 2 Emissions")),
+      p("Scope 2 is defined as emissions that are indirectly caused by an organisation when it purchases energy
+                   (for example electricity for heating and cooling, or the purchasing of electricity for charging electric vehicles)."),
+      h5(strong("Scope 3 Emissions")),
+      p("Scope 3 is defined as emissions not produced by an organisation, or the results of assets owned or controlled
+                   by the organisation, but those it is indirectly responsible for. For example when an organisation buys and disposes of
+                     products from suppliers. Any emissions not included within Scope 1 or 2 are accounted for in Scope 3."),
+      size = "m",
+      easyClose = TRUE, fade = FALSE, footer = modalButton("Close (Esc)")
+    ))
+  )
+
+  observeEvent(
+    input$scope_source_modal2,
+    showModal(modalDialog(
+      title = "What are emission scopes?",
+      h5(strong("Definitions of scope 1, 2 and 3 emissions")),
+      p("Emissions that are controlled or owned directly by a company are included under
+                   scope 1 and 2, whereas scope 3 emissions are a result of actions of the company
+                   but occur from sources the company does not control or own."),
+      h5(strong("Scope 1 Emissions")),
+      p("Scope 1 is defined as emissions from sources owned or controlled by an organisation
+                     directly – such as from burning fuel in a fleet of non-electric vehicles."),
+      h5(strong("Scope 2 Emissions")),
+      p("Scope 2 is defined as emissions that are indirectly caused by an organisation when it purchases energy
+                   (for example electricity for heating and cooling, or the purchasing of electricity for charging electric vehicles)."),
+      h5(strong("Scope 3 Emissions")),
+      p("Scope 3 is defined as emissions not produced by an organisation, or the results of assets owned or controlled
+                   by the organisation, but those it is indirectly responsible for. For example when an organisation buys and disposes of
+                     products from suppliers. Any emissions not included within Scope 1 or 2 are accounted for in Scope 3."),
+      size = "m",
+      easyClose = TRUE, fade = FALSE, footer = modalButton("Close (Esc)")
+    ))
+  )
+
+  observeEvent(
+    input$scope_source_modal3,
+    showModal(modalDialog(
+      title = "What are emission scopes?",
+      h5(strong("Definitions of scope 1, 2 and 3 emissions")),
+      p("Emissions that are controlled or owned directly by a company are included under
+                   scope 1 and 2, whereas scope 3 emissions are a result of actions of the company
+                   but occur from sources the company does not control or own."),
+      h5(strong("Scope 1 Emissions")),
+      p("Scope 1 is defined as emissions from sources owned or controlled by an organisation
+                     directly – such as from burning fuel in a fleet of non-electric vehicles."),
+      h5(strong("Scope 2 Emissions")),
+      p("Scope 2 is defined as emissions that are indirectly caused by an organisation when it purchases energy
+                   (for example electricity for heating and cooling, or the purchasing of electricity for charging electric vehicles)."),
+      h5(strong("Scope 3 Emissions")),
+      p("Scope 3 is defined as emissions not produced by an organisation, or the results of assets owned or controlled
+                   by the organisation, but those it is indirectly responsible for. For example when an organisation buys and disposes of
+                     products from suppliers. Any emissions not included within Scope 1 or 2 are accounted for in Scope 3."),
+      size = "m",
+      easyClose = TRUE, fade = FALSE, footer = modalButton("Close (Esc)")
+    ))
+  )
+})

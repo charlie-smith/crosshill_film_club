@@ -1,4 +1,5 @@
 # Git Ignore
 admin/
 .secrets
+credentials.RDS
 .Rproj.user

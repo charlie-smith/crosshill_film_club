@@ -1,0 +1,26 @@
+{
+    "id": "926E29A9",
+    "path": "~/crosshill_film_club/script/filmclub_app/server.R",
+    "project_path": "script/filmclub_app/server.R",
+    "type": "r_source",
+    "hash": "98939678",
+    "contents": "",
+    "dirty": false,
+    "created": 1699972711934.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "8,11",
+        "scrollLine": "2"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1700169780,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1700169780728,
+    "read_only": false,
+    "read_only_alternatives": []
+}
