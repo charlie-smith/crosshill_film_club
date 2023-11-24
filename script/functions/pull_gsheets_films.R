@@ -6,6 +6,8 @@
 library(tidyverse)
 library(googlesheets4)
 library(shiny)
+library(rio)
+library(here)
 
 # access google sheet via url, read sheet, then return sample of 5 titles 
 
@@ -21,3 +23,4 @@ pull_gsheets_films <- function(){
 
 }
 
+pull_gsheets_films()
