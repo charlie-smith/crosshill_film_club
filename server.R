@@ -14,12 +14,12 @@ server <- function(input, output, session) {
     # url <- "https://docs.google.com/spreadsheets/d/1Pz1FN4p9nAyt40HBfpQgoS4Rr-jTYnxG3w-Wpj-g4DY/edit?usp=drivesdk"
 
     # films_watched <- read_sheet(url, sheet = "Watched") |>
-    df_watched <- import(here('script', 'filmclub_app', 'films_watched.RDS')) |>
+    df_watched <- import(here('films_watched.RDS')) |>
       select(Title) |>
       mutate(Title = str_to_title(Title)) |> # standardise titles
       pull()
 
-    df_options <- import(here('script', 'filmclub_app', 'films_options.RDS')) |>
+    df_options <- import(here('films_options.RDS')) |>
       mutate(Title = str_to_title(Title)) |> # standardise titles
       filter(! Title %in% df_watched) # remove watched films from contention
 
