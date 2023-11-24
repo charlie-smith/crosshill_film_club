@@ -9,7 +9,7 @@ rsconnect::setAccountInfo(name='charliedontsurf',
                           token='80BAD0AB6F12A64E41B7C6A0E74350EC',
                           secret='72fx004Kqz7Z2KfVPUPyRfSTuY/kW9dCpxF3X1rf')
 
-rsconnect::deployApp(here("script", "filmclub_app"))
+rsconnect::deployApp(here())
 
 
 # Warning: Error in gs4_auth: Can't get Google credentials.
