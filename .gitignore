@@ -3,3 +3,4 @@ admin/
 .secrets
 credentials.RDS
 .Rproj.user
+client_secret.json
