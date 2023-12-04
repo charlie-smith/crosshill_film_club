@@ -3,22 +3,12 @@
 
 library(here)
 library(tidyverse)
-#library(googlesheets4)
-#library(googledrive)
+library(googlesheets4)
+library(googledrive)
 library(shiny)
 library(rsconnect)
 library(shinymanager)
 library(rio)
-
-
-
-# source(here("script", "functions", "pull_gsheets_films.R"))
-# pull_gsheets_films()
-
-# drive_auth(path = here("script", "admin", "client_secret.json"))
-# 
-# gs4_auth(path = here("script", "admin", "client_secret.json"),
-#           scopes = "drive.file")
 
 
 
