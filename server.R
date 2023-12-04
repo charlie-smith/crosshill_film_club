@@ -9,23 +9,29 @@ server <- function(input, output, session) {
   #   check_credentials = check_credentials(credentials)
   # )
   
+  drive_auth(path = here("client_secret.json"))
+  
+  gs4_auth(path = here("client_secret.json"),
+           scopes = "spreadsheets")
+  
   sample_films <- function(){
+  
+  url <- "https://docs.google.com/spreadsheets/d/1Pz1FN4p9nAyt40HBfpQgoS4Rr-jTYnxG3w-Wpj-g4DY/edit?usp=drivesdk"
 
-    # url <- "https://docs.google.com/spreadsheets/d/1Pz1FN4p9nAyt40HBfpQgoS4Rr-jTYnxG3w-Wpj-g4DY/edit?usp=drivesdk"
+  df_watched <- read_sheet(url, sheet = "Watched") |>
+  #df_watched <- import(here('films_watched.RDS')) |>
+    select(Title) |>
+    mutate(Title = str_to_title(Title)) |> # standardise titles
+    pull()
 
-    # films_watched <- read_sheet(url, sheet = "Watched") |>
-    df_watched <- import(here('films_watched.RDS')) |>
-      select(Title) |>
-      mutate(Title = str_to_title(Title)) |> # standardise titles
-      pull()
+  df_options <- read_sheet(url, sheet = "Films") |>
+  #df_options <- import(here('films_options.RDS')) |>
+    mutate(Title = str_to_title(Title)) |> # standardise titles
+    filter(! Title %in% df_watched) # remove watched films from contention
 
-    df_options <- import(here('films_options.RDS')) |>
-      mutate(Title = str_to_title(Title)) |> # standardise titles
-      filter(! Title %in% df_watched) # remove watched films from contention
+  sample_vector <- sample(df_options$Title, 3)
 
-    sample_vector <- sample(df_options$Title, 3)
-
-    return(sample_vector)
+  return(sample_vector)
 
   }
   
